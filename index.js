@@ -3,7 +3,7 @@ const inquirer = require("inquirer");
 const db = require("./config/db.js");
 
 
-function mainMenu() {
+const mainMenu = () => {
     inquirer
         .prompt([
             {
@@ -50,7 +50,7 @@ function mainMenu() {
             } else if (answers.mainMenu === "createEmployee") {
                 createEmployee();
             } else if (answers.mainMenu === "updateRole") {
-                updateRole();
+                updateEmployeeRole();
             } else if (answers.mainMenu === "viewRole") {
                 viewRole();
             } else if (answers.mainMenu === "viewDepartment") {
@@ -62,11 +62,22 @@ function mainMenu() {
 }
 
 function createRole() {
+    // to create a role
+    // 1. query db for active depts
+    const currentDepartments = db.query(`SELECT id, department_name FROM department`, function (err, results) {
+        // console.table(results);
+        // const arrayOFChoices = results.map(({id, deparment_name}) => {
+        //     name: id;
+        //     value: deparment_name
+        // })
+    });
+  
     inquirer
         .prompt([
+            
             {
                 type: "input",
-                name: "employeeRole",
+                name: "roleTitle",
                 message: "What is the name of this role?",
                 validate: (answer) => {
                     if(answer !== "") {
@@ -74,11 +85,24 @@ function createRole() {
                     }
                     return "You have entered an empty string, you must include a valid role."
                 }
+            },
+            {
+                type: "input",
+                name: "roleSalary",
+                message: "What is the salary of this role?",
+                validate: (answer) => {
+                    if(answer !== "") {
+                        return true;
+                    }
+                    return "You have entered an empty string, you must include a valid salary."
+                }
             }
         ])
-        .then((answers) => {
-            console.log(answers); 
+        .then((answer) => {
             // SQL Insert Into Database
+            db.query(`INSERT INTO role (title, salary, department_id) VALUES (answers.roleTitle, answers.roleSalary, )`, function(err, answer) {
+                console.table(answer);
+            });
         })
         .then(() => {
             mainMenu();
@@ -87,8 +111,9 @@ function createRole() {
 }
 
 function viewEmployee() {
-    db.query(`SELECT FROM * employee`, function (err, results) {
+    db.query(`SELECT * FROM employee`, function (err, results) {
         console.table(results);
+        // console.log(err);
     });
 }
 
@@ -116,14 +141,13 @@ function createEmployee() {
 
 }
 
-function updateRole() {}
+function updateEmployeeRole() {}
 
 function viewRole() {
     db.query(`SELECT * FROM role`, function (err, results) {
         console.table(results);
-        
-
     });
+    mainMenu();
 }
 
 function viewDepartment() {
@@ -155,5 +179,10 @@ function createDepartment() {
         mainMenu();
     })
 }
+
+module.exports = {mainMenu}
+const {viewEmployee, createEmployee, updateEmployeeRole} = require('./lib/employee');
+const {viewDepartment, createDepartment} = require('./lib/department');
+const {createRole, viewRole} = require('./lib/role');
 
 mainMenu();
