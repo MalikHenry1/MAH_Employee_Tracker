@@ -66,12 +66,10 @@ function createRole() {
   
     const currentDepartments = db.promise().query(`SELECT id, department_name FROM department`)
     .then( ([results]) => {
-        console.table(results);
         departments = results.map(({id, department_name}) => ({
             name: department_name,
             value: id
         }))
-        console.log(departments);
     })
 
     .then(() => {
@@ -136,11 +134,20 @@ function createRole() {
 function viewEmployee() {
     db.query(`SELECT * FROM employee`, function (err, results) {
         console.table(results);
-        // console.log(err);
     });
 }
 
 function createEmployee() {
+    let role
+
+    const currentRoles = db.promise().query(`SELECT id, title FROM role`)
+    .then( ([results]) => {
+        role = results.map(({id, title}) => ({
+            name: title,
+            value: id
+        }))
+    })
+
     inquirer
     .prompt([
         {
@@ -166,31 +173,28 @@ function createEmployee() {
             }
         },
         {
-            type: "input",
+            type: "list",
             name: "employee_role",
             message: "What is the role of this employee?",
-            validate: (answer) => {
-                if(answer !== "") {
-                    return true;
-                }
-                return "You have entered an empty string, you must include a valid role."
-            }
+            choices: role
         },
         {
             type: "input",
             name: "employee_manager",
-            message: "Who is the manager of this employee?",
-            validate: (answer) => {
-                if(answer !== "") {
-                    return true;
-                }
-                return "You have entered an empty string, you must include a valid role."
-            }
+            message: "Who is the manager of this employee (type the manager's id)?",
+            
         },
 
     ])
     .then((answers) => {
-        console.log(answers);
+        db.query(`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)`,
+        [answers.first_name, answers.last_name, answers.role_id, answers.manager_id],
+        function(err) {
+            if(err) {
+                console.log(err);
+                return;
+            }
+        })
     })
     .then(() => {
         mainMenu();
@@ -198,7 +202,18 @@ function createEmployee() {
 
 }
 
-function updateEmployeeRole() {}
+function updateEmployeeRole() {
+    db.query(`SELECT * FROM role`,
+    function(err) {
+        if(err) {
+            console.log(err);
+            return;
+        }
+
+        let roles = [];
+        
+    })
+}
 
 function viewRole() {
     db.query(`SELECT * FROM role`, function (err, results) {
