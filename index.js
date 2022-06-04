@@ -62,15 +62,20 @@ const mainMenu = () => {
 }
 
 function createRole() {
-    // to create a role
-    // 1. query db for active depts
-    const currentDepartments = db.query(`SELECT id, department_name FROM department`, function (err, results) {
-        // console.table(results);
-        // const arrayOFChoices = results.map(({id, deparment_name}) => {
-        //     name: id;
-        //     value: deparment_name
-        // })
-    });
+    let departments
+  
+    const currentDepartments = db.promise().query(`SELECT id, department_name FROM department`)
+    .then( ([results]) => {
+        console.table(results);
+        departments = results.map(({id, department_name}) => ({
+            name: department_name,
+            value: id
+        }))
+        console.log(departments);
+    })
+
+    .then(() => {
+        
   
     inquirer
         .prompt([
@@ -96,18 +101,36 @@ function createRole() {
                     }
                     return "You have entered an empty string, you must include a valid salary."
                 }
+            },
+            {
+                type: "list",
+                name: "roleDepartment",
+                message: "What department does this role belong to?",
+                choices: departments
             }
         ])
         .then((answer) => {
-            // SQL Insert Into Database
-            db.query(`INSERT INTO role (title, salary, department_id) VALUES (answers.roleTitle, answers.roleSalary, )`, function(err, answer) {
-                console.table(answer);
+            let department_id;
+
+            for(let i=0; i<departments.length; i++) {
+                if(departments[i] === answer.roleDepartment) {
+                    department_id = i+1;
+                };
+            };
+
+            db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`,
+            [answer.roleTitle, answer.roleSalary, answer.roleDepartment], 
+            function(err, answer) {
+                if(err){
+                    console.log(err);
+                    return;
+                }    
             });
         })
         .then(() => {
             mainMenu();
         })
-
+    })
 }
 
 function viewEmployee() {
@@ -122,15 +145,49 @@ function createEmployee() {
     .prompt([
         {
             type: "input",
-            name: "newEmployee",
-            message: "What is the name of this employee?",
+            name: "first_name",
+            message: "What is the first name of this employee?",
             validate: (answer) => {
                 if(answer !== "") {
                     return true;
                 }
                 return "You have entered an empty string, you must include a valid role."
             }
-        }
+        },
+        {
+            type: "input",
+            name: "last_name",
+            message: "What is the last name of this employee?",
+            validate: (answer) => {
+                if(answer !== "") {
+                    return true;
+                }
+                return "You have entered an empty string, you must include a valid role."
+            }
+        },
+        {
+            type: "input",
+            name: "employee_role",
+            message: "What is the role of this employee?",
+            validate: (answer) => {
+                if(answer !== "") {
+                    return true;
+                }
+                return "You have entered an empty string, you must include a valid role."
+            }
+        },
+        {
+            type: "input",
+            name: "employee_manager",
+            message: "Who is the manager of this employee?",
+            validate: (answer) => {
+                if(answer !== "") {
+                    return true;
+                }
+                return "You have entered an empty string, you must include a valid role."
+            }
+        },
+
     ])
     .then((answers) => {
         console.log(answers);
@@ -173,16 +230,18 @@ function createDepartment() {
         }
     ])
     .then((answers) => {
-        console.log(answers);
+        db.query(`INSERT INTO department(department_name) Values(?)`,
+        [answers.newDepartment],
+        function (err) {
+            if(err) {
+                console.log(err);
+            }
+        })
     })
     .then(() => {
         mainMenu();
     })
 }
 
-module.exports = {mainMenu}
-const {viewEmployee, createEmployee, updateEmployeeRole} = require('./lib/employee');
-const {viewDepartment, createDepartment} = require('./lib/department');
-const {createRole, viewRole} = require('./lib/role');
 
 mainMenu();
