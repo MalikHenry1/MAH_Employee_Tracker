@@ -43,6 +43,8 @@
   GitHub: [github.com/MalikHenry1](mailto:github.com/MalikHenry1)
   
   Email: mhenry30658@gmail.com
+
+  Walkthrough Video Link: [https://drive.google.com/file/d/17J1OGQIWneaZNfmDDfSLQwGM73eDGhoh/view](mailto:https://drive.google.com/file/d/17J1OGQIWneaZNfmDDfSLQwGM73eDGhoh/view)
     
     
 

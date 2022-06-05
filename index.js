@@ -148,6 +148,8 @@ function createEmployee() {
         }))
     })
 
+    .then( () => {
+
     inquirer
     .prompt([
         {
@@ -188,7 +190,7 @@ function createEmployee() {
     ])
     .then((answers) => {
         db.query(`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)`,
-        [answers.first_name, answers.last_name, answers.role_id, answers.manager_id],
+        [answers.first_name, answers.last_name, answers.employee_role, answers.employee_manager],
         function(err) {
             if(err) {
                 console.log(err);
@@ -200,19 +202,59 @@ function createEmployee() {
         mainMenu();
     })
 
-}
+})}
 
 function updateEmployeeRole() {
-    db.query(`SELECT * FROM role`,
-    function(err) {
-        if(err) {
-            console.log(err);
-            return;
-        }
+    let role
 
-        let roles = [];
-        
+    const currentRoles = db.promise().query(`SELECT id, title FROM role`)
+    .then( ([results]) => {
+        role = results.map(({id, title}) => ({
+            name: title,
+            value: id
+        }))
     })
+
+    let employee
+
+    const currentEmployees = db.promise().query(`SELECT first_name, last_name FROM employee`)
+    .then(([results]) => {
+        employee = results.map(({first_name, last_name}) => ({
+            name: first_name,
+            value: last_name
+        }))
+    })
+
+    .then(() => {
+        inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "employee",
+                    message: "Which employee would you like to update?",
+                    choices: employee
+                },
+                {
+                    type: "list",
+                    name: "newRole",
+                    message: "What is the new role of this employee?",
+                    choices: role
+                }
+            ])
+   
+
+    .then((answers) => {
+        db.query(`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)`,
+        [first_name, last_name, answers.newRole, answers.employee_manager],
+        function(err) {
+            if(err) {
+                console.log(err);
+                return;
+            }
+        })
+    })
+})
+
 }
 
 function viewRole() {
